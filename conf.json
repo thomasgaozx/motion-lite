@@ -1,7 +1,6 @@
 {
 	"show_video": true,
 	"use_dropbox": true,
-	"dropbox_access_token": "",
 	"dropbox_base_path": "/home/pi/Monitor",
 	"min_upload_seconds": 3.0,
 	"min_motion_frames": 8,
@@ -9,5 +8,6 @@
 	"delta_thresh": 5,
 	"resolution": [1920, 1080],
 	"fps": 30,
+	"video_path": "/home/pi/Monitor",
 	"min_area": 5000
 }

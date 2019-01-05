@@ -104,15 +104,11 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
                 # check to see if dropbox sohuld be used
                 if conf["use_dropbox"]:
                     # write the image to temporary file
-                    t = TempImage()
-                    cv2.imwrite(t.path, frame)
+                    cv2.imwrite("{base_path}/{ts}{ext}".format(base_path=video_path, 
+                        ts=timestamp.strftime("%A %d %B %Y %I:%M:%S%p"), ext=".jpg"), frame)
 
                     # upload the image to Dropbox and cleanup the tempory image
-                    print("[UPLOAD] {}".format(ts))
-                    path = "/{base_path}/{timestamp}.jpg".format(
-                        base_path=conf["dropbox_base_path"], timestamp=ts)
-                    client.files_upload(open(t.path, "rb").read(), path)
-
+                    print("[SAVED] {}".format(ts))
                 # update the last uploaded timestamp and reset the motion
                 # counter
                 lastUploaded = timestamp
