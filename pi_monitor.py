@@ -31,7 +31,7 @@ rawCapture = PiRGBArray(camera, size=tuple(conf["resolution"]))
 
 # Set up path to write videos
 video_path = conf["video_path"]
-if os.path.isdir(video_path):
+if not os.path.isdir(video_path):
     raise Exception(video_path + " doesn't exist!")
 
 # allow the camera to warmup, then initialize the average frame, last
