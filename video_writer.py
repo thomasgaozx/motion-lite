@@ -1,7 +1,9 @@
 import cv2
 import threading
+import traceback
 
 from queue import Queue, Full
+from .debug import log
 
 class VideoWriter:
     def __init__(self, _framerate, _resolution):
@@ -11,10 +13,14 @@ class VideoWriter:
         self.resolution = _resolution
         self.m_thread = threading.Thread(target=self.write_video, args=())
         self.m_thread.start()
+        log("[STAT] init success")
+        log(self.resolution)
 
     def signal_termination(self):
         self.schedule_frame_write(None)
         self.running = False
+        log("[STAT] signaled termination")
+
 
     def deinit(self):
         """
@@ -22,6 +28,7 @@ class VideoWriter:
         """
         self.signal_termination()
         self.m_thread.join(timeout=2)
+        log("[STAT] deinit success")
         return not self.m_thread.is_alive()
 
     def schedule_frame_write(self, frame):
@@ -32,24 +39,29 @@ class VideoWriter:
             self.q.put_nowait(frame)
             return True
         except Full:
+            log("[PROD] queue is full")
             return False
 
     def write_video(self):
+        log("[CONS] thread started")
         video = None # sentinel for end of video
         while self.running:
             frame_info = self.q.get()
-            try:
-                if frame_info is None: # end of a video
-                    video.release()
-                    video = None
-                elif video is None: # start of a video
-                    video = cv2.VideoWriter(frame_info[1]+".avi", cv2.VideoWriter_fourcc(*"MJPG"), 
-                            self.framerate, self.resolution)
-                    video.write(frame_info[0])
-                else:
-                    video.write(frame_info[0])
-            except: # corrupted?
+        # try:
+            if frame_info is None: # end of a video
+                video.release()
+                log("[CONS] video saved: " + frame_info[1])
                 video = None
+            elif video is None: # start of a video
+                video = cv2.VideoWriter(frame_info[1]+".avi", cv2.VideoWriter_fourcc(*"MJPG"), 
+                        self.framerate, self.resolution)
+                log("[CONS] video writer started: " + frame_info[1])
+                video.write(frame_info[0])
+            else:
+                video.write(frame_info[0])
+        # except Exception: # corrupted?
+        #     log('[CONS] exception while writing video: ' + traceback.format_exc())
+        #     video = None
         
         if video is not None:
             video.release()

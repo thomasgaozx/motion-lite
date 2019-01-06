@@ -10,5 +10,6 @@
 	"fps": 30,
 	"min_recording_period": 5,
 	"video_path": "/home/pi/Monitor",
-	"min_area": 5000
+	"min_area": 5000,
+	"debug": true
 }
