@@ -47,6 +47,7 @@ class VideoWriter:
         video = None # sentinel for end of video
         while self.running:
             frame_info = self.q.get()
+            log("[CONS] WRITING")
         # try:
             if frame_info is None: # end of a video
                 video.release()

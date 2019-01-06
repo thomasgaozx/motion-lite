@@ -90,6 +90,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
     if occupied:
+        log("[ALERT] is_writing renewed")
         # write the image to temporary file
         is_writing = True
         vid_writer.schedule_frame_write((raw_frame, ts))
