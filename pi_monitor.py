@@ -73,7 +73,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     cv2.accumulateWeighted(gray, avg, 0.5)
 
     if is_writing and (timestamp - last_started).seconds < min_recording_period:
-        vid_writer.schedule_frame_write((ts, raw_frame))
+        vid_writer.schedule_frame_write((raw_frame, ts))
         rawCapture.truncate(0)
         continue
 
@@ -92,7 +92,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     if occupied:
         # write the image to temporary file
         is_writing = True
-        vid_writer.schedule_frame_write((ts, raw_frame))
+        vid_writer.schedule_frame_write((raw_frame, ts))
         last_started = timestamp
     elif is_writing:
         is_writing = False
