@@ -1,8 +1,12 @@
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
+from .stream_sender import StreamSender
+from .stream_server import start_stream_server
 from .video_writer import VideoWriter
 from . import helper
+
+from multiprocessing import Process
 import warnings
 import datetime
 import json
@@ -45,7 +49,8 @@ print("[INFO] warming up...")
 time.sleep(conf["camera_warmup_time"])
 avg = None
 
-vid_writer = VideoWriter(fps, res, video_path)
+image_sender = StreamSender()
+server_ps = Process(target=start_stream_server, args=(fps, res, video_path))
 is_writing = False
 last_started = None
 
@@ -73,7 +78,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     cv2.accumulateWeighted(gray, avg, 0.5)
 
     if is_writing and (timestamp - last_started).seconds < min_recording_period:
-        vid_writer.schedule_frame_write((raw_frame, ts))
+        image_sender.send_frame(raw_frame, ts)
         rawCapture.truncate(0)
         continue
 
@@ -93,11 +98,11 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
         log("[ALERT] is_writing renewed")
         # write the image to temporary file
         is_writing = True
-        vid_writer.schedule_frame_write((raw_frame, ts))
+        image_sender.send_frame(raw_frame, ts)
         last_started = timestamp
     elif is_writing:
         is_writing = False
-        vid_writer.schedule_frame_write(None)
+        image_sender.cut_video()
 
     # check to see if the frames should be displayed to screen
     if show_video and helper.display_frame(frame):
@@ -107,5 +112,5 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     rawCapture.truncate(0)
 
 # final cleanup
-vid_writer.deinit()
+#vid_writer.deinit()
 cv2.destroyAllWindows()

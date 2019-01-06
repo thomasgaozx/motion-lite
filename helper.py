@@ -1,8 +1,8 @@
 import cv2
-
 import argparse
 
 from .convenience import grab_contours
+
 def parse_args():
     """
     return a parsed argument
