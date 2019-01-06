@@ -71,6 +71,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     if is_writing and (timestamp - last_started).seconds < min_recording_period:
         vid_writer.schedule_frame_write(raw_frame)
+        rawCapture.truncate(0)
         continue
         
 
