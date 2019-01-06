@@ -97,6 +97,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
         last_started = timestamp
     elif is_writing:
         is_writing = False
+        vid_writer.schedule_frame_write(None)
 
     # check to see if the frames should be displayed to screen
     if show_video and helper.display_frame(frame):

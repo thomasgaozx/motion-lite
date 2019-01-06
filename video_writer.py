@@ -51,7 +51,7 @@ class VideoWriter:
         # try:
             if frame_info is None: # end of a video
                 video.release()
-                log("[CONS] video saved: " + frame_info[1])
+                log("[CONS] video saved: ")
                 video = None
             elif video is None: # start of a video
                 video = cv2.VideoWriter(frame_info[1]+".avi", cv2.VideoWriter_fourcc(*"MJPG"), 
