@@ -10,6 +10,9 @@ class StreamSender:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect("127.0.0.1", SERVER_PORT)
     
+    def deinit(self):
+        self.sock.close()
+
     def send_frame(self, frame, date_str):
         self.sock.send(Message(0, serialize(frame, date_str)).encode())
 

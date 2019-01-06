@@ -113,4 +113,5 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
 # final cleanup
 #vid_writer.deinit()
+image_sender.deinit()
 cv2.destroyAllWindows()
