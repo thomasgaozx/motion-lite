@@ -45,7 +45,7 @@ print("[INFO] warming up...")
 time.sleep(conf["camera_warmup_time"])
 avg = None
 
-vid_writer = VideoWriter(fps, res)
+vid_writer = VideoWriter(fps, res, video_path)
 is_writing = False
 last_started = None
 

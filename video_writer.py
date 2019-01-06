@@ -1,3 +1,4 @@
+import os
 import cv2
 import threading
 import traceback
@@ -6,11 +7,12 @@ from queue import Queue, Full
 from .debug import log
 
 class VideoWriter:
-    def __init__(self, _framerate, _resolution):
+    def __init__(self, _framerate, _resolution, _vid_dir):
         self.running = True
         self.q = Queue(maxsize=3000)
         self.framerate = _framerate
         self.resolution = _resolution
+        self.vid_dir = _vid_dir
         self.m_thread = threading.Thread(target=self.write_video, args=())
         self.m_thread.start()
         log("[STAT] init success")
@@ -54,7 +56,8 @@ class VideoWriter:
                 log("[CONS] video saved: ")
                 video = None
             elif video is None: # start of a video
-                video = cv2.VideoWriter(frame_info[1]+".avi", cv2.VideoWriter_fourcc(*"MJPG"), 
+                
+                video = cv2.VideoWriter(os.path.join(self.vid_dir, frame_info[1]+".avi"), cv2.VideoWriter_fourcc(*"MJPG"), 
                         self.framerate, self.resolution)
                 log("[CONS] video writer started: " + frame_info[1])
                 video.write(frame_info[0])
