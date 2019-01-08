@@ -71,6 +71,7 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     # log("[MAIN] accumulateWeighted")
     cv2.accumulateWeighted(gray, avg, 0.5)
+    ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
 
     if is_writing and (timestamp - last_started).seconds < min_recording_period:
         vid_writer.schedule_frame_write((raw_frame, ts))
@@ -85,7 +86,6 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     occupied = helper.draw_contours(frame, cnts, min_area)
 
     # draw the text and timestamp on the frame
-    ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
     cv2.putText(frame, "Occupied: " + str(occupied), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
