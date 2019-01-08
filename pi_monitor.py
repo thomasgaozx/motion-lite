@@ -2,6 +2,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 
 from .video_writer import VideoWriter
+from .write_lock import WriteLock
 from . import helper
 import warnings
 import datetime
@@ -40,7 +41,6 @@ if not os.path.isdir(video_path):
 set_debug(conf["debug"])
 
 # allow the camera to warmup, then initialize the average frame, last
-# uploaded timestamp, and frame motion counter
 print("[INFO] warming up...")
 time.sleep(conf["camera_warmup_time"])
 avg = None
@@ -51,20 +51,13 @@ last_started = None
 
 # capture frames from the camera
 for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-    # grab the raw NumPy array representing the image and initialize
-    # the timestamp and occupied/unoccupied text
-    # log("[MAIN] fetch raw frame and timestamp")
     raw_frame = f.array
     timestamp = datetime.datetime.now()
 
-    # resize the frame, convert it to grayscale, and blur it
-    # log("[MAIN] resize and blur secondary frame")
     frame = resize(raw_frame, width=500)
     gray = cv2.GaussianBlur(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (21, 21), 0)
 
-    # if the average frame is None, initialize it
     if avg is None:
-        # log("[MAIN] starting background model...")
         avg = gray.copy().astype("float")
         rawCapture.truncate(0)
         continue

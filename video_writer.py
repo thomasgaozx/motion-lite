@@ -23,7 +23,6 @@ class VideoWriter:
         self.running = False
         log("[STAT] signaled termination")
 
-
     def deinit(self):
         """
         returns whether the worker thread is alive or not
