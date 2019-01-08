@@ -36,12 +36,3 @@ def draw_contours(frame, cnts, min_area):
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         occupied = True
     return occupied
-
-def display_frame(frame):
-    """
-    returns whether or not to quit
-    """
-    # display the security feed
-    cv2.imshow("Security Feed", frame)
-    key = cv2.waitKey(1) & 0xFF
-    return key == ord("q")

@@ -41,16 +41,18 @@ if not os.path.isdir(video_path):
 set_debug(conf["debug"])
 
 # allow the camera to warmup, then initialize the average frame, last
-print("[INFO] warming up...")
+log("[INFO] warming up...")
 time.sleep(conf["camera_warmup_time"])
 avg = None
 
 vid_writer = VideoWriter(fps, res, video_path)
-is_writing = False
 last_started = None
 
-# capture frames from the camera
-for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+def process_frame(f):
+    global avg
+    global last_started
+    global min_recording_period
+
     raw_frame = f.array
     timestamp = datetime.datetime.now()
 
@@ -59,17 +61,15 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
 
     if avg is None:
         avg = gray.copy().astype("float")
-        rawCapture.truncate(0)
-        continue
+        return True
 
     # log("[MAIN] accumulateWeighted")
     cv2.accumulateWeighted(gray, avg, 0.5)
     ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
 
-    if is_writing and (timestamp - last_started).seconds < min_recording_period:
+    if vid_writer.write_lock.is_writing and (timestamp - last_started).seconds < min_recording_period:
         vid_writer.schedule_frame_write((raw_frame, ts))
-        rawCapture.truncate(0)
-        continue
+        return True
 
     # get contours
     # log("[MAIN] detect motions and get contours")
@@ -82,19 +82,31 @@ for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True
     cv2.putText(frame, "Occupied: " + str(occupied), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
+    # signal stop recording / continue recording
     if occupied:
-        log("[ALERT] is_writing renewed")
-        # write the image to temporary file
-        is_writing = True
+        log("[ALERT] is_writing started/renewed")
+        vid_writer.write_lock.write_lock()
         vid_writer.schedule_frame_write((raw_frame, ts))
         last_started = timestamp
-    elif is_writing:
-        is_writing = False
+    elif vid_writer.write_lock.is_writing:
+        log("[ALERT] finished recording")
+        vid_writer.write_lock.write_unlock()
         vid_writer.schedule_frame_write(None)
 
     # check to see if the frames should be displayed to screen
-    if show_video and helper.display_frame(frame):
-        break
+    if show_video:
+        cv2.imshow("Security Feed", frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            log("[ALERT] quitting ...")
+            return False
+    
+    return True
+        
+
+# capture frames from the camera
+for f in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+    if not process_frame(f): break
 
     # clear the stream in preparation for the next frame
     rawCapture.truncate(0)

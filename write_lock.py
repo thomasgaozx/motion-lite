@@ -15,21 +15,23 @@ class WriteLock:
         self.disallow_read_override = True
 
     def set_read_override(self): # infrequent
-        """ allow read and write to happen concurrently 
-        
-        calling this method repeatedly may reduce performance """
+        """ allow read and write to happen concurrently
+
+        calling this method frequently may reduce performance """
         with self.cv:
             self.disallow_read_override = False
             self.cv.notify_all()
 
     def unset_read_override(self): # infrequent
-        """ disallow read and write to happen concurrently, 
+        """ disallow read and write to happen concurrently,
             calls this after set read override """
         with self.cv:
             self.disallow_read_override = True
 
     def pending_read(self): # ver frequent
         """
+        wait until writing stops and then proceed
+
         initial check may seem redundant, but since this method will be called
         frequently, a raw, cv-independent initial check will improve performance.
 
