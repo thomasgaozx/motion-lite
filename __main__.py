@@ -20,7 +20,12 @@ args = helper.parse_args()
 
 # filter warnings, load the configuration
 warnings.filterwarnings("ignore")
-conf = json.load(open(args["conf"]))
+
+conf_path = args["conf"]
+if not conf_path:
+    conf_path = "/home/pi/motion_lite/conf.json"
+
+conf = json.load(open(conf_path))
 
 # initialize the camera and grab a reference to the raw camera capture
 res = tuple(conf["resolution"])

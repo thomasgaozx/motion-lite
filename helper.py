@@ -8,7 +8,7 @@ def parse_args():
     return a parsed argument
     """
     ap = argparse.ArgumentParser()
-    ap.add_argument("-c", "--conf", required=True,
+    ap.add_argument("-c", "--conf", required=False,
         help="path to the JSON configuration file")
     return vars(ap.parse_args())
 
