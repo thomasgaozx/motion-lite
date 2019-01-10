@@ -68,7 +68,11 @@ def accumulate_thread():
         tup = accum_q.get()
 
         if tup[1]: # is raw frame
-            time.sleep(0.2)
+            if accum_q.qsize() > 100:
+                for i in range(95): # congestion
+                    accum_q.get() # should not block!
+            else:
+                time.sleep(0.1)
             cv2.accumulateWeighted(process_raw_frame(tup[0]), avg, 0.5)
         else: # is fully processed frame
             cv2.accumulateWeighted(tup[0], avg, 0.5)
