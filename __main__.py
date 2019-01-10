@@ -65,7 +65,6 @@ def accumulate_thread():
     global accum_q
 
     while True:
-        time.sleep(0.2)
         tup = accum_q.get()
 
         if tup[1]: # is raw frame
