@@ -37,6 +37,8 @@ camera.resolution = res
 camera.framerate = fps
 rawCapture = PiRGBArray(camera, size=res)
 
+sleep_dur = 0.95 / fps # to spread the workload thin for worker thread
+
 # Set up path to write videos
 show_video = conf["show_video"]
 min_area = conf["min_area"]
@@ -63,6 +65,7 @@ def process_raw_frame(raw_frame):
 def accumulate_thread():
     global avg
     global accum_q
+    global sleep_dur
 
     while True:
         tup = accum_q.get()
@@ -72,7 +75,7 @@ def accumulate_thread():
                 for i in range(95): # congestion
                     accum_q.get() # should not block!
             else:
-                time.sleep(0.0625)
+                time.sleep(sleep_dur)
             cv2.accumulateWeighted(process_raw_frame(tup[0]), avg, 0.5)
         else: # is fully processed frame
             cv2.accumulateWeighted(tup[0], avg, 0.5)
