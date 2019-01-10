@@ -8,14 +8,14 @@ from .debug import log
 from .write_lock import WriteLock
 
 class VideoWriter:
-    def __init__(self, _framerate, _resolution, _vid_dir, _threshold=250, _buffer=150):
+    def __init__(self, _framerate, _resolution, _vid_dir, _threshold=100, _buffer=50):
         """
         Starts the consumer thread to write videos.
         threshold is the value that when reached, write_lock's read override would be enabled.
         threshold - buffer = the number of frame when reached, write_lock's read override will be disabled.
         """
         self.running = True
-        self.q = Queue(maxsize=500)
+        self.q = Queue(maxsize=250)
         self.framerate = _framerate
         self.resolution = _resolution
         self.vid_dir = _vid_dir
