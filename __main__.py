@@ -118,6 +118,8 @@ def process_frame(f):
     ts = timestamp.strftime("%B %d %I:%M:%S%p")
 
     if vid_writer.write_lock.is_writing and (timestamp - last_started).seconds < min_recording_period:
+        if not vid_writer.write_lock.disallow_read_override:
+            time.sleep(0.03) # to spread the workload, give read the priority
         schedule_raw_frame_accum(raw_frame)
         vid_writer.schedule_frame_write((raw_frame, ts))
         return True
