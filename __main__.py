@@ -4,6 +4,8 @@ from picamera import PiCamera
 from .video_writer import VideoWriter
 from .write_lock import WriteLock
 from . import helper
+from queue import Queue, Full
+import threading
 import warnings
 import datetime
 import json
@@ -53,6 +55,28 @@ avg = None
 vid_writer = VideoWriter(fps, res, video_path)
 last_started = None
 
+accum_q = Queue()
+
+def accumulate_thread():
+    global avg
+    global accum_q
+    while True:
+        gray = accum_q.get()
+        cv2.accumulateWeighted(gray, avg, 0.5)
+
+def schedule_gray_accum(gray):
+    global accum_q
+    try:
+        accum_q.put_nowait(gray)
+        return True
+    except Full:
+        return False
+
+accum_thread = threading.Thread(target=accumulate_thread, args=())
+accum_thread.start()
+
+# TODO: join later && signal exit
+
 def process_frame(f):
     global avg
     global last_started
@@ -69,7 +93,7 @@ def process_frame(f):
         return True
 
     # log("[MAIN] accumulateWeighted")
-    cv2.accumulateWeighted(gray, avg, 0.5)
+    schedule_gray_accum(gray)
     ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
 
     if vid_writer.write_lock.is_writing and (timestamp - last_started).seconds < min_recording_period:
