@@ -33,6 +33,7 @@ conf = json.load(open(conf_path))
 res = tuple(conf["resolution"])
 fps = conf["fps"]
 camera = PiCamera()
+camera.vflip = True
 camera.resolution = res
 camera.framerate = fps
 rawCapture = PiRGBArray(camera, size=res)
