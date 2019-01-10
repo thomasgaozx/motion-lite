@@ -15,7 +15,7 @@ class VideoWriter:
         threshold - buffer = the number of frame when reached, write_lock's read override will be disabled.
         """
         self.running = True
-        self.q = Queue(maxsize=250)
+        self.q = Queue(maxsize=350)
         self.framerate = _framerate
         self.resolution = _resolution
         self.vid_dir = _vid_dir
