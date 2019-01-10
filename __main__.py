@@ -60,9 +60,12 @@ accum_q = Queue()
 def accumulate_thread():
     global avg
     global accum_q
+
+    dowork = 1
     while True:
         gray = accum_q.get()
-        cv2.accumulateWeighted(gray, avg, 0.5)
+        dowork ^= 1
+        if dowork: cv2.accumulateWeighted(gray, avg, 0.5)
 
 def schedule_gray_accum(gray):
     global accum_q
