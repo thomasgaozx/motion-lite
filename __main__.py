@@ -55,22 +55,37 @@ avg = None
 vid_writer = VideoWriter(fps, res, video_path)
 last_started = None
 
-accum_q = Queue()
+accum_q = Queue() # a queue of (frame, is_raw)
+
+def process_raw_frame(raw_frame):
+    return cv2.GaussianBlur(cv2.cvtColor(resize(raw_frame, width=360), cv2.COLOR_BGR2GRAY), (21, 21), 0).astype("float")
 
 def accumulate_thread():
     global avg
     global accum_q
 
-    dowork = 1
     while True:
-        gray = accum_q.get()
-        dowork ^= 1
-        if dowork: cv2.accumulateWeighted(gray, avg, 0.5)
+        time.sleep(0.2)
+        tup = accum_q.get()
 
-def schedule_gray_accum(gray):
+        if tup[1]: # is raw frame
+            time.sleep(0.2)
+            cv2.accumulateWeighted(process_raw_frame(tup[0]), avg, 0.5)
+        else: # is fully processed frame
+            cv2.accumulateWeighted(tup[0], avg, 0.5)
+
+def schedule_raw_frame_accum(raw_frame):
     global accum_q
     try:
-        accum_q.put_nowait(gray)
+        accum_q.put_nowait((raw_frame, True))
+        return True
+    except Full:
+        return False
+
+def schedule_processed_frame_accum(processed_frame):
+    global accum_q
+    try:
+        accum_q.put_nowait((processed_frame, False))
         return True
     except Full:
         return False
@@ -88,22 +103,22 @@ def process_frame(f):
     raw_frame = f.array
     timestamp = datetime.datetime.now()
 
-    frame = resize(raw_frame, width=500)
-    gray = cv2.GaussianBlur(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (21, 21), 0)
-
     if avg is None:
-        avg = gray.copy().astype("float")
+        avg = cv2.GaussianBlur(cv2.cvtColor(resize(raw_frame, width=360), cv2.COLOR_BGR2GRAY), (21, 21), 0).astype("float") #repetition 1
         return True
 
     # log("[MAIN] accumulateWeighted")
-    schedule_gray_accum(gray)
-    ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
+    ts = timestamp.strftime("%B %d %I:%M:%S%p")
 
     if vid_writer.write_lock.is_writing and (timestamp - last_started).seconds < min_recording_period:
+        schedule_raw_frame_accum(raw_frame)
         vid_writer.schedule_frame_write((raw_frame, ts))
         return True
 
-    # get contours
+    frame = resize(raw_frame, width=360)
+    gray = cv2.GaussianBlur(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (21, 21), 0)
+    schedule_processed_frame_accum(gray)
+
     # log("[MAIN] detect motions and get contours")
     cnts = helper.detect_motions(gray, avg, delta_thresh)
 
