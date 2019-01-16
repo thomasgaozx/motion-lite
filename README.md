@@ -23,11 +23,12 @@ When `motion` is capturing videos, one of the four CPUs bumps to 100% while the 
 It is highly optimized for machines with very limited computing power to capture satisfactory-quality videos (on motion detection).
 
 This project is specifically designed for raspberry pi camera mounted on a raspberry pi 3 B+ computer.
-Nevertheless, it should not take long to port the code onto any other python 3.5 supporting platform.
+~~Nevertheless, it should not take long to port the code onto any other python 3.5 supporting platform.~~
 
-**Additionl Note**: this working project is still under development.
-Since I used a whole lot of code snippets for image processing (from online tutorials) when I was just getting started, the source code is still quite messy.
-I will eventually clean up the ugly bits and make it more presentable.
+**Updates in `v1.0`**: the project can now work on any python 3.5 supporting platform.
+Anything specific to Raspbian and picamera is decoupled from the core of this project.
+`basic_motion_capture` module provides the generic image processing and recording functions.
+`pi_motion_capture` module extends the `basic_motion_capture` and provides `picamera` specific implementations. 
 
 ## Milestones
 
@@ -54,7 +55,7 @@ As of 1/9/2019, the average framerates (on motion detection) are:
 C++ was the original choice of language.
 Unfortunately, python module `picamera` is the official API for pi camera.
 Despite the fact that the `picamera` module is written in C.
-Digging into the C source code would cost me waaayy too much times and is obviously not worth it.
+Digging into the C source code would cost me waaayy too much time and is obviously not worth it.
 Therefore, python is chosen.
 
 However, python's GIL confined the extent that the multi-threaded application could perform concurrent tasks.
