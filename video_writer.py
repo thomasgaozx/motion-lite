@@ -8,7 +8,7 @@ from .debug import log
 from .write_lock import WriteLock
 
 class VideoWriter:
-    def __init__(self, _framerate, _resolution, _vid_dir, _threshold=180, _buffer=80):
+    def __init__(self, _conf, _threshold=180, _buffer=80):
         """
         Starts the consumer thread to write videos.
         threshold is the value that when reached, write_lock's read override would be enabled.
@@ -16,9 +16,7 @@ class VideoWriter:
         """
         self.running = True
         self.q = Queue(maxsize=350)
-        self.framerate = _framerate
-        self.resolution = _resolution
-        self.vid_dir = _vid_dir
+        self.conf = _conf
         self.trigger_threshold = _threshold
         self.stop_threashold = _threshold - _buffer
 
@@ -27,9 +25,7 @@ class VideoWriter:
         # init consumer thread
         self.m_thread = threading.Thread(target=self.write_video, args=())
         self.m_thread.start()
-
-        log("[STAT] init success")
-        log(self.resolution)
+        log("[STAT] video writer init success")
 
     def signal_termination(self):
         self.schedule_frame_write(None)
@@ -73,8 +69,8 @@ class VideoWriter:
                 video = None
             elif video is None: # start of a video
 
-                video = cv2.VideoWriter(os.path.join(self.vid_dir, frame_info[1]+".avi"), cv2.VideoWriter_fourcc(*"MJPG"),
-                        self.framerate, self.resolution)
+                video = cv2.VideoWriter(os.path.join(self.conf.video_path, frame_info[1]+".avi"), cv2.VideoWriter_fourcc(*"MJPG"),
+                        self.conf.fps, self.conf.resolution)
                 log("[CONS] video writer started: " + frame_info[1])
                 video.write(frame_info[0])
             else:
